@@ -13,4 +13,10 @@ export class Customer {
 
   @Column('text', { array: true, nullable: true })
   orderIds?: string[];
+
+  @Column({ select: false, nullable: true })
+  passwordHash: string;
+
+  @Column({ default: 'user' })
+  role: 'user' | 'admin';
 }

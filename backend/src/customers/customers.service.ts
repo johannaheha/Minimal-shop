@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Customer } from './customer.entity';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CustomersService {
@@ -13,7 +14,13 @@ export class CustomersService {
   ) {}
 
   async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
-    const customer = this.customersRepository.create(createCustomerDto);
+    const { password, ...rest } = createCustomerDto;
+    const passwordHash = await bcrypt.hash(password, 10);
+    const customer = this.customersRepository.create({
+      ...rest,
+      passwordHash,
+    });
+
     return this.customersRepository.save(customer);
   }
 
@@ -41,5 +48,14 @@ export class CustomersService {
   async remove(id: string): Promise<void> {
     const customer = await this.findOne(id);
     await this.customersRepository.remove(customer);
+  }
+
+  // Für AuthService bzw. login
+  async findByEmailWithPassword(email: string): Promise<Customer | null> {
+    return this.customersRepository
+      .createQueryBuilder('customer')
+      .addSelect('customer.passwordHash') // wegen select: false
+      .where('customer.email = :email', { email })
+      .getOne();
   }
 }
