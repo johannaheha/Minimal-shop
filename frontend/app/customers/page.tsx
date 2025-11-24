@@ -186,8 +186,14 @@ export default function CustomersPage() {
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-900">
-                      {customer.name}
+                      <Link
+                        href={`/customers/${customer.id}`}
+                        className="hover:underline"
+                      >
+                        {customer.name}
+                      </Link>
                     </h3>
+
                     <span className="text-sm text-slate-700">
                       {customer.email}
                     </span>
