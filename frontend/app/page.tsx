@@ -10,7 +10,7 @@ export default function HomePage() {
           </h1>
           <p className="text-sm sm:text-base text-slate-600">
             Willkommen in meinem kleinen Fullstack-Shop-Projekt. Verwalte
-            Produkte und Kunden über eine einfache Oberfläche.
+            Produkte, Kunden und Bestellungen über eine einfache Oberfläche.
           </p>
         </header>
 
@@ -34,6 +34,17 @@ export default function HomePage() {
             <p className="text-sm text-slate-600">
               Kundenliste ansehen, neue Kunden hinzufügen und ihre zugehörigen
               Bestellungen im Blick behalten.
+            </p>
+          </Link>
+
+          <Link
+            href="/orders"
+            className="block rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition p-5 space-y-2"
+          >
+            <h2 className="text-lg font-semibold text-slate-900">Orders</h2>
+            <p className="text-sm text-slate-600">
+              Bestellungen anlegen, zugehörige Produkte und KundenIDs verwalten
+              und den Gesamtpreis im Blick behalten.
             </p>
           </Link>
         </section>
