@@ -104,7 +104,7 @@ export default function CustomersPage() {
             href="/"
             className="text-sm text-slate-600 underline hover:text-slate-900"
           >
-            Back to products
+            Back to Homepage
           </Link>
         </header>
 
