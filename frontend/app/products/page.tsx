@@ -23,6 +23,9 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // -------------------------------
+  // Produkte laden
+  // -------------------------------
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -48,6 +51,9 @@ export default function HomePage() {
     fetchProducts();
   }, []);
 
+  // -------------------------------
+  // Neues Produkt anlegen (POST)
+  // -------------------------------
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -97,6 +103,92 @@ export default function HomePage() {
     }
   };
 
+  // -------------------------------
+  // Produkt löschen (DELETE /products/:id)
+  // -------------------------------
+  const handleDelete = async (id: string) => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete product: ${res.status}`);
+      }
+
+      // Lokal aus der Liste entfernen
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unknown error while deleting product"
+      );
+    }
+  };
+
+  // -------------------------------
+  // Produkt updaten (PUT /products/:id)
+  // (einfach per prompt – fürs Demo völlig ok)
+  // -------------------------------
+  const handleEdit = async (product: Product) => {
+    setError(null);
+
+    const newName = window.prompt("New name:", product.name);
+    if (newName === null || newName.trim() === "") return;
+
+    const newDescription = window.prompt(
+      "New description (can be empty):",
+      product.description ?? ""
+    );
+
+    const newPriceStr = window.prompt("New price:", product.price.toString());
+    if (newPriceStr === null) return;
+    const newPrice = Number(newPriceStr);
+    if (Number.isNaN(newPrice)) {
+      setError("Price must be a number");
+      return;
+    }
+
+    const newImageUrl = window.prompt(
+      "New image URL (can be empty):",
+      product.imageUrl ?? ""
+    );
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/products/${product.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newName,
+          description: newDescription || null,
+          price: newPrice,
+          imageUrl: newImageUrl || null,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update product: ${res.status}`);
+      }
+
+      const updated: Product = await res.json();
+
+      // Lokalen State mit dem aktualisierten Produkt mergen
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? updated : p))
+      );
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unknown error while updating product"
+      );
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-100 flex flex-col items-center p-8">
       <div className="w-full max-w-3xl space-y-8">
@@ -112,6 +204,7 @@ export default function HomePage() {
           </Link>
         </header>
 
+        {/* Formular für neues Produkt */}
         <section className="bg-white rounded-xl shadow p-6 space-y-4">
           <h2 className="text-xl font-semibold text-slate-800">
             Add a new product
@@ -182,6 +275,7 @@ export default function HomePage() {
           </form>
         </section>
 
+        {/* Produktliste */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-slate-800">Products</h2>
 
@@ -206,7 +300,7 @@ export default function HomePage() {
                     </div>
                   )}
                   <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <Link
                         href={`/products/${product.id}`}
                         className="font-semibold text-slate-900 hover:underline"
@@ -231,6 +325,24 @@ export default function HomePage() {
                     <p className="text-[11px] text-slate-400">
                       ID: {product.id}
                     </p>
+
+                    {/* Buttons für Edit & Delete */}
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(product)}
+                        className="text-xs px-3 py-1 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(product.id)}
+                        className="text-xs px-3 py-1 rounded-md border border-red-300 text-red-700 hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
